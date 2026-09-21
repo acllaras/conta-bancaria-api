@@ -166,4 +166,40 @@ public class ContaService {
 
         return contaSalva;
     }
+
+    public Conta aplicarJuros(
+        Long contaId,
+        BigDecimal taxa) {
+
+    Conta conta = buscarPorId(contaId);
+    
+    if (!(conta instanceof ContaCorrente)) {
+        throw new RuntimeException(
+                "Juros só podem ser aplicados em conta corrente"
+        );
+    }
+
+    ContaCorrente contaCorrente =
+            (ContaCorrente) conta;
+
+    BigDecimal juros =
+            contaCorrente.aplicarJuros(taxa);
+    
+    Conta contaSalva =
+            contaRepository.save(contaCorrente);
+            
+    Transacao transacao = new Transacao();
+    
+    transacao.setTipo(
+            TipoTransacao.JUROS
+    );
+
+    transacao.setValor(juros);
+    transacao.setData(LocalDateTime.now());
+    transacao.setConta(contaCorrente);
+
+    transacaoRepository.save(transacao);
+
+    return contaSalva;
+    }   
 }

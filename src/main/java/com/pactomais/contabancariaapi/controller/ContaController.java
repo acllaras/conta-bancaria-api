@@ -81,4 +81,15 @@ public class ContaController {
                 taxa
         );
     }
+
+    @PostMapping("/{id}/juros")
+    public Conta aplicarJuros(
+            @PathVariable Long id,
+            @RequestParam BigDecimal taxa) {
+
+        return service.aplicarJuros(
+                id,
+                taxa
+        );
+    }
 }

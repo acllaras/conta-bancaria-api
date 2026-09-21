@@ -1,4 +1,5 @@
 package com.pactomais.contabancariaapi.model;
+
 import com.pactomais.contabancariaapi.exception.SaldoInsuficienteException;
 
 import javax.persistence.Entity;
@@ -30,6 +31,29 @@ public class ContaCorrente extends Conta {
         }
 
         setSaldo(getSaldo().subtract(valor));
+    }
+
+    public BigDecimal aplicarJuros(BigDecimal taxa) {
+
+        if (taxa.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException(
+                    "A taxa deve ser maior que zero"
+            );
+        }
+
+        if (getSaldo().compareTo(BigDecimal.ZERO) >= 0) {
+            throw new RuntimeException(
+                    "A conta não possui saldo negativo"
+            );
+        }
+
+        BigDecimal saldoNegativo = getSaldo().abs();
+
+        BigDecimal juros = saldoNegativo.multiply(taxa);
+
+        setSaldo(getSaldo().subtract(juros));
+
+        return juros;
     }
 
     public BigDecimal getLimite() {
