@@ -1,4 +1,5 @@
 package com.pactomais.contabancariaapi.model;
+
 import com.pactomais.contabancariaapi.exception.SaldoInsuficienteException;
 
 import javax.persistence.Entity;
@@ -26,5 +27,20 @@ public class ContaPoupanca extends Conta {
         }
 
         setSaldo(getSaldo().subtract(valor));
+    }
+
+    public BigDecimal aplicarRendimento(BigDecimal taxa) {
+
+        if (taxa.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException(
+                    "A taxa deve ser maior que zero"
+            );
+        }
+
+        BigDecimal rendimento = getSaldo().multiply(taxa);
+
+        setSaldo(getSaldo().add(rendimento));
+
+        return rendimento;
     }
 }

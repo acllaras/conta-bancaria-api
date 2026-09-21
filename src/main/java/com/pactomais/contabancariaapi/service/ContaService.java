@@ -1,19 +1,20 @@
 package com.pactomais.contabancariaapi.service;
 
 import com.pactomais.contabancariaapi.dto.AberturaContaRequest;
+import com.pactomais.contabancariaapi.exception.ContaNaoEncontradaException;
 import com.pactomais.contabancariaapi.model.Conta;
 import com.pactomais.contabancariaapi.model.ContaCorrente;
 import com.pactomais.contabancariaapi.model.ContaPoupanca;
 import com.pactomais.contabancariaapi.model.Correntista;
-import com.pactomais.contabancariaapi.repository.ContaRepository;
-import org.springframework.stereotype.Service;
 import com.pactomais.contabancariaapi.model.TipoTransacao;
 import com.pactomais.contabancariaapi.model.Transacao;
+import com.pactomais.contabancariaapi.repository.ContaRepository;
 import com.pactomais.contabancariaapi.repository.TransacaoRepository;
-import com.pactomais.contabancariaapi.exception.ContaNaoEncontradaException;
 
-import java.time.LocalDateTime;
+import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -36,7 +37,9 @@ public class ContaService {
     public Conta abrirConta(AberturaContaRequest request) {
 
         Correntista correntista =
-                correntistaService.buscarPorId(request.getCorrentistaId());
+                correntistaService.buscarPorId(
+                        request.getCorrentistaId()
+                );
 
         Conta conta;
 
@@ -58,7 +61,9 @@ public class ContaService {
 
         } else {
 
-            throw new RuntimeException("Tipo de conta inválido");
+            throw new RuntimeException(
+                    "Tipo de conta inválido"
+            );
         }
 
         conta.setNumero(request.getNumero());
@@ -72,57 +77,93 @@ public class ContaService {
     }
 
     public Conta buscarPorId(Long id) {
+
         return contaRepository.findById(id)
                 .orElseThrow(() ->
-                        new ContaNaoEncontradaException("Conta não encontrada"));
+                        new ContaNaoEncontradaException(
+                                "Conta não encontrada"
+                        ));
     }
 
     public Conta depositar(Long contaId, BigDecimal valor) {
 
-    Conta conta = buscarPorId(contaId);
+        Conta conta = buscarPorId(contaId);
 
-    conta.depositar(valor);
+        conta.depositar(valor);
 
-    Conta contaSalva = contaRepository.save(conta);
+        Conta contaSalva = contaRepository.save(conta);
 
-    Transacao transacao = new Transacao();
-    transacao.setTipo(TipoTransacao.DEPOSITO);
-    transacao.setValor(valor);
-    transacao.setData(LocalDateTime.now());
-    transacao.setConta(conta);
-  
-    transacaoRepository.save(transacao);
+        Transacao transacao = new Transacao();
+        transacao.setTipo(TipoTransacao.DEPOSITO);
+        transacao.setValor(valor);
+        transacao.setData(LocalDateTime.now());
+        transacao.setConta(conta);
 
-    return contaSalva;
-   }
+        transacaoRepository.save(transacao);
 
-   public Conta sacar(Long contaId, BigDecimal valor) {
+        return contaSalva;
+    }
 
-    Conta conta = buscarPorId(contaId);
+    public Conta sacar(Long contaId, BigDecimal valor) {
 
-    conta.sacar(valor);
+        Conta conta = buscarPorId(contaId);
 
-    Conta contaSalva = contaRepository.save(conta);
+        conta.sacar(valor);
 
-    Transacao transacao = new Transacao();
-    transacao.setTipo(TipoTransacao.SAQUE);
-    transacao.setValor(valor);
-    transacao.setData(LocalDateTime.now());
-    transacao.setConta(conta);
+        Conta contaSalva = contaRepository.save(conta);
 
-    transacaoRepository.save(transacao);
+        Transacao transacao = new Transacao();
+        transacao.setTipo(TipoTransacao.SAQUE);
+        transacao.setValor(valor);
+        transacao.setData(LocalDateTime.now());
+        transacao.setConta(conta);
 
-    return contaSalva;
-   }
+        transacaoRepository.save(transacao);
 
-   public List<Transacao> buscarExtrato(Long contaId) {
+        return contaSalva;
+    }
 
-    buscarPorId(contaId);
+    public List<Transacao> buscarExtrato(Long contaId) {
 
-    return transacaoRepository
-            .findByContaIdOrderByDataDesc(contaId);
-   }
+        buscarPorId(contaId);
+
+        return transacaoRepository
+                .findByContaIdOrderByDataDesc(contaId);
+    }
+
+    public Conta aplicarRendimento(
+            Long contaId,
+            BigDecimal taxa) {
+
+        Conta conta = buscarPorId(contaId);
+
+        if (!(conta instanceof ContaPoupanca)) {
+            throw new RuntimeException(
+                    "Rendimento só pode ser aplicado em conta poupança"
+            );
+        }
+
+        ContaPoupanca contaPoupanca =
+                (ContaPoupanca) conta;
+
+        BigDecimal rendimento =
+                contaPoupanca.aplicarRendimento(taxa);
+
+        Conta contaSalva =
+                contaRepository.save(contaPoupanca);
+
+        Transacao transacao = new Transacao();
+
+        transacao.setTipo(
+                TipoTransacao.RENDIMENTO
+        );
+
+        transacao.setValor(rendimento);
+        transacao.setData(LocalDateTime.now());
+        transacao.setConta(contaPoupanca);
+
+        transacaoRepository.save(transacao);
+
+        return contaSalva;
+    }
 }
-
-
-
