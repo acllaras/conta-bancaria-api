@@ -3,6 +3,8 @@ package com.pactomais.contabancariaapi.controller;
 import com.pactomais.contabancariaapi.dto.AberturaContaRequest;
 import com.pactomais.contabancariaapi.model.Conta;
 import com.pactomais.contabancariaapi.service.ContaService;
+import com.pactomais.contabancariaapi.dto.OperacaoRequest;
+import com.pactomais.contabancariaapi.model.Transacao;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,4 +35,30 @@ public class ContaController {
     public Conta buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id);
     }
+
+    @PostMapping("/{id}/depositos")
+    public Conta depositar(
+           @PathVariable Long id,
+           @RequestBody OperacaoRequest request) {
+
+        return service.depositar(id, request.getValor());
+    }
+
+    @PostMapping("/{id}/saques")
+    public Conta sacar(
+           @PathVariable Long id,
+           @RequestBody OperacaoRequest request) {
+
+        return service.sacar(id, request.getValor());
+    }
+    
+    @GetMapping("/{id}/transacoes")
+    public List<Transacao> buscarExtrato(
+           @PathVariable Long id) {
+
+        return service.buscarExtrato(id);
+    }
+
+
+    
 }
