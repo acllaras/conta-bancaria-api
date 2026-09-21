@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.pactomais.contabancariaapi.model.TipoTransacao;
 import com.pactomais.contabancariaapi.model.Transacao;
 import com.pactomais.contabancariaapi.repository.TransacaoRepository;
+import com.pactomais.contabancariaapi.exception.ContaNaoEncontradaException;
 
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
@@ -72,7 +73,8 @@ public class ContaService {
 
     public Conta buscarPorId(Long id) {
         return contaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Conta não encontrada"));
+                .orElseThrow(() ->
+                        new ContaNaoEncontradaException("Conta não encontrada"));
     }
 
     public Conta depositar(Long contaId, BigDecimal valor) {

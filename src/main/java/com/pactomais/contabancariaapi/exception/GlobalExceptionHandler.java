@@ -27,4 +27,36 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(resposta);
     }
+
+    @ExceptionHandler(ContaNaoEncontradaException.class)
+    public ResponseEntity<Map<String, Object>> tratarContaNaoEncontrada(
+            ContaNaoEncontradaException exception) {
+
+        Map<String, Object> resposta = new HashMap<>();
+
+        resposta.put("timestamp", LocalDateTime.now());
+        resposta.put("status", HttpStatus.NOT_FOUND.value());
+        resposta.put("erro", "Not Found");
+        resposta.put("mensagem", exception.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(resposta);
+    }
+
+    @ExceptionHandler(CorrentistaNaoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarCorrentistaNaoEncontrado(
+            CorrentistaNaoEncontradoException exception) {
+
+        Map<String, Object> resposta = new HashMap<>();
+
+        resposta.put("timestamp", LocalDateTime.now());
+        resposta.put("status", HttpStatus.NOT_FOUND.value());
+        resposta.put("erro", "Not Found");
+        resposta.put("mensagem", exception.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(resposta);
+    }
 }
