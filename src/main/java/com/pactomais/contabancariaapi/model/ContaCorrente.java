@@ -5,9 +5,11 @@ import javax.persistence.Entity;
 import java.math.BigDecimal;
 
 @Entity
-public class ContaPoupanca extends Conta {
+public class ContaCorrente extends Conta {
 
-    public ContaPoupanca() {
+    private BigDecimal limite = BigDecimal.ZERO;
+
+    public ContaCorrente() {
     }
 
     @Override
@@ -19,12 +21,22 @@ public class ContaPoupanca extends Conta {
             );
         }
 
-        if (valor.compareTo(getSaldo()) > 0) {
+        BigDecimal valorDisponivel = getSaldo().add(limite);
+
+        if (valor.compareTo(valorDisponivel) > 0) {
             throw new SaldoInsuficienteException(
-                    "Saldo insuficiente"
+                    "Saldo e limite insuficientes"
             );
         }
 
         setSaldo(getSaldo().subtract(valor));
+    }
+
+    public BigDecimal getLimite() {
+        return limite;
+    }
+
+    public void setLimite(BigDecimal limite) {
+        this.limite = limite;
     }
 }
